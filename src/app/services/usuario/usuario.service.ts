@@ -12,7 +12,6 @@ import 'rxjs/add/operator/catch';
 
 // es un plugin para mensajes popup 'sweetalert'
 import swal from 'sweetalert';
-import { catchError } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -30,7 +29,24 @@ export class UsuarioService {
     ) {
 
       this.cargarStorage();
+  }
 
+  renuevaToken() {
+    let url = URL_SERVICIOS + '/login/renuevatoken' + '?token=' + this.token;
+
+    return this.http.get(url)
+                .map((resp: any) => {
+                  this.token = resp.token;
+                  // está renovando con el nuevo token en el localStorage
+                  localStorage.setItem('token', this.token);
+                  console.log('token renovado');
+                  return true;
+                })
+                .catch(err => {
+                  this.router.navigate(['/login']);
+                  swal('No se pudo renovar token', 'No fue posible renovar el token', 'error');
+                  return throwError(err);
+                });
   }
 
   guardarStorage(id: string, token: string, usuario: Usuario, menu: any) {
